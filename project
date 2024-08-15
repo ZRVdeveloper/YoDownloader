@@ -46,14 +46,17 @@ class YoDowloader(customtkinter.CTk):
         audio_path = f"anew.aac"
         path = str(f'{path.rstrip()}').replace(" ", "_")        
         path = str(f'{path.rstrip()}').replace("?", "")        
-        path = str(f'{path.rstrip()}').replace("!", "")
-        
-        print (path)
-        #path = 'Microwave1'
-        #print (path)
-        cmd = f"ffmpeg -i {video_path} -i {audio_path} -c:v copy {path}.mp4"
-        
+        path = str(f'{path.rstrip()}').replace("!", "")        
+        cmd = f"ffmpeg -i {video_path} -i {audio_path} -c:v copy {path}.mp4"        
         os.system(cmd)
+        self.info.configure(text=f"{self.info.cget('text')}. Convert - ok")
+        print(self.info.cget('text'))
+        d1, d2 = f"del {video_path}", f"del {audio_path}"
+        os.system(d1)
+        os.system(d2)
+        self.info.configure(text=f"{self.info.cget('text')}. path del - ok")
+        print(self.info.cget('text'))
+        return self.info.cget('text')
     def download (self):
         if self.test():
             try:
@@ -80,7 +83,7 @@ class YoDowloader(customtkinter.CTk):
             finally:
                 self.stream = self.video.streams.get_by_itag(self.project.get())
                 v_type = (str(self.stream).split(" "))[2].split('/')[1]
-                print(self.stream.title, self.stream, v, self.video)
+                #print(self.stream.title, self.stream, v, self.video)
                 self.stream.download()        
                 self.info.configure(text="Завантаження виконано")
                 self.insert.delete(0, len(self.link))
@@ -113,9 +116,8 @@ class YoDowloader(customtkinter.CTk):
                 self.stream = self.video.streams.get_by_itag(a_tag)
                 self.stream.download(filename_prefix = 'a', filename = 'new.aac')
             #обєднуємо файли
-            t = self.stream.title
-            self.convert(t)
-            self.info.configure(text="Завантаження виконано")
+            t = self.stream.title            
+            self.info.configure(text=self.convert(t))
             self.insert.delete(0, len(self.link))
     def info_str(self,info_type = 1):
         if self.test():
