@@ -42,6 +42,8 @@ class YoDowloader(customtkinter.CTk):
             if self.link.startswith(self.line) or self.link.startswith(self.line2):
                 return True
             else: self.error()
+            
+        
         elif v == 1:
             self.line = "https://www.youtube.com/playlist"
             self.link = self.project.get()
@@ -55,17 +57,20 @@ class YoDowloader(customtkinter.CTk):
         audio_path = f"anew.aac"
         path = str(f'{path.rstrip()}').replace(" ", "_")        
         path = str(f'{path.rstrip()}').replace("?", "")        
-        path = str(f'{path.rstrip()}').replace("!", "")        
-        cmd = f"ffmpeg -i {video_path} -i {audio_path} -c:v copy {path}.mp4"        
-        os.system(cmd)
-        self.info.configure(text=f"{self.info.cget('text')}. Convert - ok")
-        print(self.info.cget('text'))
-        d1, d2 = f"del {video_path}", f"del {audio_path}"
-        os.system(d1)
-        os.system(d2)
-        self.info.configure(text=f"{self.info.cget('text')}. path del - ok")
-        print(self.info.cget('text'))
-        return self.info.cget('text')
+        path = str(f'{path.rstrip()}').replace("!", "")
+        if self.file_is_ready(path):
+            print(ok)
+        else:
+            cmd = f"ffmpeg -i {video_path} -i {audio_path} -c:v copy {path}.mp4"        
+            os.system(cmd)
+            self.info.configure(text=f"{self.info.cget('text')}. Convert - ok")
+            print(self.info.cget('text'))
+            d1, d2 = f"del {video_path}", f"del {audio_path}"
+            os.system(d1)
+            os.system(d2)
+            self.info.configure(text=f"{self.info.cget('text')}. path del - ok")
+            print(self.info.cget('text'))
+            return self.info.cget('text')
     def download (self):
         if self.test():
             try:
@@ -83,7 +88,7 @@ class YoDowloader(customtkinter.CTk):
                 self.insert.delete(0, 100)
             
     def download_list(self):        
-        self.list_info.place(x=520, y=80)
+        self.list_info.place(x=320, y=80)
         self.geometry("800x200")
         self.btn_info_stream_v.destroy()
         self.btn_info_stream_a.destroy()
@@ -101,7 +106,7 @@ class YoDowloader(customtkinter.CTk):
                 self.project.set(value=vv)
                 self.download_best()
                 self.list_download_ok += 1
-                self.list_info.configure(text=f"{self.list_size} у списку \nЗавантаженно: {self.list_download_ok}")
+                self.list_info.configure(text=f"{self.list_size} у списку \nЗавантаженно: {self.list_download_ok} \nЗавантажуємо \n {self.t}")
                 self.update()
             self.list_info.configure(text=f"{self.list_size} у списку \nЗавантаженно: {self.list_download_ok}")
             self.update()
@@ -127,14 +132,20 @@ class YoDowloader(customtkinter.CTk):
                 print(f'Video  is unavaialable, skipping.')
             finally:
                 self.stream = self.video.streams.filter(file_extension='mp4')
+                
                 #вантажим відео
                 oll = str(self.stream).split(">,")
                 v_tag = (oll[1].split('"\','))[0].split('="')[1].split(" ")[0]
                 v_tag = v_tag[:-1]
-                #print(v_tag)
+                    #print(v_tag)
                 self.stream = self.video.streams.get_by_itag(v_tag)
-                #v_video = str(self.stream).split(">,")[0]
-                self.stream.download(filename_prefix = 'v', filename = 'new.mp4')
+                    #v_video = str(self.stream).split(">,")[0]
+                self.t = self.stream.title
+                if self.file_is_ready(self.stream.title) != True:
+                    self.stream.download(filename_prefix = 'v', filename = 'new.mp4')
+                else:
+                    print('video-ok')
+                
             try:
                 self.video = YouTube (self.link, on_progress_callback=self.v_prog)
             except VideoUnavailable:
@@ -146,11 +157,16 @@ class YoDowloader(customtkinter.CTk):
                 a_tag = (oll[len(oll)-1].split('"\','))[0].split('="')[1].split(" ")[0]
                 a_tag = a_tag[:-1]
                 self.stream = self.video.streams.get_by_itag(a_tag)
-                self.stream.download(filename_prefix = 'a', filename = 'new.aac')
+                if self.file_is_ready(self.stream.title) != True:
+                    self.stream.download(filename_prefix = 'a', filename = 'new.aac')                    
+                    
+                    #print(1)
+                    self.info.configure(text=self.convert(self.t))
+                    self.insert.delete(0, len(self.link))
+                else:
+                    print('video-ok')
             #обєднуємо файли
-            t = self.stream.title            
-            self.info.configure(text=self.convert(t))
-            self.insert.delete(0, len(self.link))
+            
     def info_str(self,info_type = 1):
         if self.test():
             try:
@@ -169,9 +185,18 @@ class YoDowloader(customtkinter.CTk):
                 self.btn_by_tag.place(x=20, y=140)
                 self.btn_best.place(x=20, y=170)
                 
-               
-            
-    
+    def file_is_ready(self,path):
+        self.file_in_dir = os.listdir()
+        path = str(f'{path.rstrip()}').replace(" ", "_")        
+        path = str(f'{path.rstrip()}').replace("?", "")        
+        path = str(f'{path.rstrip()}').replace("!", "")
+        path +='.mp4'
+        #print(path)
+        rez = False
+        for name in self.file_in_dir:
+            if path == name:
+                rez=True
+        return rez
     def __init__(self):
         
         super().__init__()
@@ -206,7 +231,7 @@ class YoDowloader(customtkinter.CTk):
         self.btn_best = CTkButton(master = self, text = "Завантажити найкраще", command = self.download_best)
         self.btn_list = CTkButton(master = self, text = "Завантажити список", command = self.download_list)
         self.btn_list.place(x=520, y=40)
-        self.list_info = CTkLabel(master = self, text = "")
+        self.list_info = CTkLabel(master = self, text = "", justify="left")
         
         
         self.protocol("WM_DELETE_WINDOW",self.on_closing)
