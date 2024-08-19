@@ -3,7 +3,7 @@ from tkinter import *
 import customtkinter
 from customtkinter import *  # <- import the CustomTkinter module
 from CTkMessagebox import CTkMessagebox
-from pytubefix import YouTube
+from pytubefix import YouTube, Playlist
 from pytube.cli import on_progress
 from pytube.exceptions import VideoUnavailable
 import os
@@ -31,16 +31,25 @@ class YoDowloader(customtkinter.CTk):
         #print(round(size,1), "%")
         self.info.configure(text=f"Завантажено: {round(size,1)} %")
         self.update()
-    def test (self):
-        #print(self.project.get())
-        #self.info.configure(text="Завантажую...")
-        #if self.test() == True:
-        self.line = "https://www.youtube.com/watch?v="
-        self.line2 = "https://www.youtube.com/shorts/"
-        self.link = self.project.get()
-        if self.link.startswith(self.line) or self.link.startswith(self.line2):
-            return True
-        else: self.error()
+    def test (self, v = 0):
+        if v == 0:
+            #print(self.project.get())
+            #self.info.configure(text="Завантажую...")
+            #if self.test() == True:
+            self.line = "https://www.youtube.com/watch?v="
+            self.line2 = "https://www.youtube.com/shorts/"
+            self.link = self.project.get()
+            if self.link.startswith(self.line) or self.link.startswith(self.line2):
+                return True
+            else: self.error()
+        elif v == 1:
+            self.line = "https://www.youtube.com/playlist"
+            self.link = self.project.get()
+            if self.link.startswith(self.line):
+                return True
+            else: self.error()
+            
+        
     def convert(self,path):
         video_path = f"vnew.mp4"
         audio_path = f"anew.aac"
@@ -73,7 +82,30 @@ class YoDowloader(customtkinter.CTk):
                 self.info.configure(text="Завантаження виконано")
                 self.insert.delete(0, 100)
             
-    
+    def download_list(self):        
+        self.list_info.place(x=520, y=80)
+        self.geometry("800x200")
+        self.btn_info_stream_v.destroy()
+        self.btn_info_stream_a.destroy()
+        self.radiobutton_1.destroy()
+        self.radiobutton_2.destroy()
+        self.update()
+        if self.test(v=1):
+            
+            p = Playlist(self.link)
+            self.list_size = len(p.video_urls)
+            self.list_download_ok = 0
+            self.list_info.configure(text=f"{self.list_size} у списку \nЗавантаженно: {self.list_download_ok}")
+            for vv in p.video_urls:                
+                print(vv)
+                self.project.set(value=vv)
+                self.download_best()
+                self.list_download_ok += 1
+                self.list_info.configure(text=f"{self.list_size} у списку \nЗавантаженно: {self.list_download_ok}")
+                self.update()
+            self.list_info.configure(text=f"{self.list_size} у списку \nЗавантаженно: {self.list_download_ok}")
+            self.update()
+        
     def download_by_tag(self):
         if self.test():
             try:
@@ -136,6 +168,8 @@ class YoDowloader(customtkinter.CTk):
                 self.insert.delete(0,len(self.link))
                 self.btn_by_tag.place(x=20, y=140)
                 self.btn_best.place(x=20, y=170)
+                
+               
             
     
     def __init__(self):
@@ -170,6 +204,9 @@ class YoDowloader(customtkinter.CTk):
         self.info_stream.place(x=200, y=140)
         self.btn_by_tag = CTkButton(master = self, text = "Завантажити за тегом", command = self.download_by_tag)
         self.btn_best = CTkButton(master = self, text = "Завантажити найкраще", command = self.download_best)
+        self.btn_list = CTkButton(master = self, text = "Завантажити список", command = self.download_list)
+        self.btn_list.place(x=520, y=40)
+        self.list_info = CTkLabel(master = self, text = "")
         
         
         self.protocol("WM_DELETE_WINDOW",self.on_closing)
