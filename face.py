@@ -4,7 +4,7 @@ from tkinter.ttk import Progressbar as Progress
 from tkinter.scrolledtext import ScrolledText
 import customtkinter, tkinter
 from customtkinter import *
-from CTkMenuBar import *
+#from CTkMenuBar import *
 import yofun
 
 
@@ -18,7 +18,7 @@ class YoDownloadFaceTk(tkinter.Toplevel):
         yofun.YoFun(links,self) # self.procent_label, self.progress, 
     def __init__(self,me):
         super().__init__()
-        self.geometry("670x250+300+100")
+        self.geometry("670x500+300+100")
         self.help = Label (master = self,text = 'Вставте посилання на Youtube відео',font=[me.font[0],14])
         self.help.place(x=20, y=10)
         self.input_link = Text(master = self, height = 5,width = 60,bg = "white",font=[me.font[0],11])
@@ -36,6 +36,8 @@ class YoDownloadFaceTk(tkinter.Toplevel):
         self.btn.place(x=400, y=200)
         self.info = ScrolledText(master = self, height = 15,width = 100,bg = "white",font=[me.font[0],8])
         self.info.place(x=20, y=250)
+        self.btn_clear_info = Button(master = self, text = "Clear", command = lambda: self.info.delete('1.0', 'end'))
+        self.btn_clear_info.place(x=550, y=200)
         
 
         
@@ -57,7 +59,7 @@ class YoDownloadFaceCustomTk(customtkinter.CTkToplevel):
         self.config(menu=self.menubar)
         self.menubar.add_cascade("Інший вигляд", command=self.destroy)
         customtkinter.set_appearance_mode("System")  # Modes: "System" (standard), "Dark", "Light"
-        self.geometry("670x250")
+        self.geometry("670x450")
         self.help = CTkLabel(master = self,text = 'Вставте посилання на Youtube відео', font=(me.font[0],16))
         self.help.place(x=20, y=40)                 
         self.input_link = CTkTextbox(master = self, height = 100,width = 400,border_width=2,font=(self.font[0],14))
