@@ -21,7 +21,17 @@ class YoFun():
         elif url.startswith(l2): return 'shorts'
         elif url.startswith(l3): return 'playlist'                
         else: return False
+    def test_in_dir(self,path='1'):
+        if os.path.exists(f"{path}"):
+            self.parent_win.info.insert('1.0', 'Знайдено тимчасові файли ')
+            d1 = f"del {path}"
+            os.system(d1)
+            self.parent_win.info.insert('1.0', 'Тимчасові файли видалені\n')
+            self.parent_win.update()
+        
     def test_name(self,url):
+        self.test_in_dir('vnew.mp4')
+        self.test_in_dir('anew.aac')
         try:
             self.video = YouTube (url, on_progress_callback=self.v_prog)
             self.stream = self.video.streams.get_highest_resolution()
@@ -45,6 +55,7 @@ class YoFun():
                 return [False,path]
         
     def convert(self,path):
+        #self.test_in_dir()
         video_path = f"vnew.mp4"
         audio_path = f"anew.aac"
         path = str(f'{path.rstrip()}').replace(" ", "_")        
@@ -155,7 +166,7 @@ class YoFun():
                 case 3: self.info_str1 = str(self.video.streams.filter(only_audio=True))
             self.info_str1 = self.info_str1.replace(">,",">,\n")
             self.parent_win.geometry("670x550")
-            self.parent_win.info.insert(1.0, self.info_str1)
+            self.parent_win.info.insert('1.0', self.info_str1)
             self.parent_win.info.place(x=20, y=250)
             
     def __init__(self,urls = None, win = None): #procent_label = None, progress = None, 
